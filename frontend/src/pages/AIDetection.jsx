@@ -84,7 +84,19 @@ export default function AIDetection() {
     // Connect to Backend WebSocket
     let ws;
     try {
-      ws = new WebSocket(`ws://${window.location.hostname}:8000/api/ai/ws/events`);
+      let wsUrl = import.meta.env.VITE_WS_URL;
+      if (!wsUrl) {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        if (apiUrl) {
+          const wsProtocol = apiUrl.startsWith('https') ? 'wss:' : 'ws:';
+          const host = apiUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+          wsUrl = `${wsProtocol}//${host}/api/ai/ws/events`;
+        } else {
+          wsUrl = `ws://${window.location.hostname}:8000/api/ai/ws/events`;
+        }
+      }
+
+      ws = new WebSocket(wsUrl);
 
       ws.onmessage = (event) => {
         try {

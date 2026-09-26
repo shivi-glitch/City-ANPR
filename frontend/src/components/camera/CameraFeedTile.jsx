@@ -558,18 +558,19 @@ export default function CameraFeedTile({
                     <button
                       type="button"
                       onClick={() => {
+                        const streamUrl = import.meta.env.VITE_AI_STREAM_URL || `http://${window.location.hostname}:5000/video_feed`;
                         onSourceChange(camera.id, {
                           type: 'live_ai',
-                          url: `http://${window.location.hostname}:5000/video_feed`,
+                          url: streamUrl,
                           isLiveAI: true,
-                          fileName: 'AI Engine Stream (Port 5000)'
+                          fileName: 'AI Engine Stream'
                         });
                         setShowConfig(false);
                       }}
                       className="w-full text-left px-2 py-1 rounded hover:bg-[#222222] text-[#888888] flex items-center gap-1"
                     >
                       <Cpu size={11} />
-                      <span>Live AI Stream (Port 5000)</span>
+                      <span>Live AI Stream</span>
                     </button>
                   </div>
                 </div>

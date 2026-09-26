@@ -85,6 +85,12 @@ def main():
         help="Speed limit in km/h for overspeed alerts"
     )
     parser.add_argument(
+        "--backend-url",
+        type=str,
+        default=None,
+        help="FastAPI Backend URL (e.g. https://your-backend.onrender.com or http://localhost:8000)"
+    )
+    parser.add_argument(
         "--show-window",
         action="store_true",
         default=True,
@@ -100,6 +106,8 @@ def main():
     print(f" Video Source  : {args.source}")
     print(f" Virtual Line  : {args.line_axis.upper()} at pixel {args.line_pos}")
     print(f" Plate Storage : ai_engine/data/plate_crops/")
+    if args.backend_url:
+        print(f" Backend URL   : {args.backend_url}")
     print("==================================================")
 
     from ultralytics import YOLO
@@ -114,7 +122,7 @@ def main():
     ocr = PlateOCR(use_easyocr=True) # Real OCR enabled
     speed_est = SpeedEstimator(fps=25.0, meters_per_pixel=0.06, speed_limit_kmh=args.speed_limit)
     line_detector = LineCrossDetector(mode=args.line_axis, position=args.line_pos)
-    emitter = HTTPEmitter()
+    emitter = HTTPEmitter(backend_url=args.backend_url)
 
     print("[+] Loading YOLOv8 model (yolov8n.pt)...")
     model = YOLO("yolov8n.pt")
