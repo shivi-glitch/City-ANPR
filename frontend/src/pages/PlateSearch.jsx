@@ -62,16 +62,16 @@ export default function PlateSearch() {
     >
       <div className="w-full space-y-6">
         {/* Search Bar */}
-        <div className="bg-[#161616] border border-[#2A2A2A] rounded-[6px] p-5">
+        <div className="bg-[#161616] border border-[#2A2A2A] rounded-[8px] p-6 shadow-md">
           <form onSubmit={handleLookup} className="space-y-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="flex-1">
                 <Input
                   mono
                   value={query}
                   onChange={(e) => setQuery(e.target.value.toUpperCase())}
                   placeholder="Enter plate number — e.g. PB10AB1234"
-                  className="text-[16px] uppercase tracking-wider h-11 px-3.5"
+                  className="text-[16px] uppercase tracking-wider h-12 px-4 bg-[#111111] border-[#333333]"
                   autoFocus
                 />
               </div>
@@ -79,50 +79,46 @@ export default function PlateSearch() {
                 type="submit"
                 variant="primary"
                 disabled={loading || !query.trim()}
-                className="px-6 h-11 text-[14px]"
+                className="px-8 h-12 text-[14px] font-semibold"
               >
                 {loading ? 'Searching...' : 'Look up'}
               </Button>
             </div>
             
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-t border-[#2A2A2A]/50 pt-4">
-              <p className="text-[12px] text-[#666666] font-ui flex items-center pt-1">
+            <div className="flex flex-col items-center justify-center gap-3 border-t border-[#2A2A2A]/60 pt-4 mt-2">
+              <p className="text-[12px] text-[#666666] font-ui text-center">
                 Search is case-insensitive. Partial matches not supported.
               </p>
               
               {searchHistory.length > 0 && (
-                <div className="flex flex-col gap-2 w-full md:w-80 md:ml-auto bg-[#1A1A1A]/60 border border-[#2A2A2A] rounded-[6px] p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#888888] uppercase tracking-wider font-semibold">Recent Searches</span>
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <span className="text-[12px] text-[#888888] font-medium mr-1 uppercase tracking-wider">Recent:</span>
+                  {searchHistory.map((item, idx) => (
                     <button
+                      key={idx}
                       type="button"
                       onClick={() => {
-                        setSearchHistory([]);
-                        localStorage.removeItem('plate_search_history');
+                        setQuery(item);
+                        setSearchParams({ plate: item });
+                        search(item);
+                        addToHistory(item);
                       }}
-                      className="text-[11px] text-[#EF4444] hover:text-[#FF5555] transition-colors font-medium"
+                      className="px-3 py-1 bg-[#202020] hover:bg-[#2A2A2A] border border-[#333333] hover:border-[#4A4A4A] rounded-full text-[12px] text-[#D4D4D4] hover:text-[#FFFFFF] font-mono transition-all flex items-center gap-1.5 shadow-sm group"
                     >
-                      Clear All
+                      <span className="tracking-wide">{item}</span>
+                      <Search size={11} className="text-[#666666] group-hover:text-[#3B82F6] transition-colors" />
                     </button>
-                  </div>
-                  <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
-                    {searchHistory.map((item, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setQuery(item);
-                          setSearchParams({ plate: item });
-                          search(item);
-                          addToHistory(item);
-                        }}
-                        className="w-full text-left px-3 py-1.5 bg-[#141414] hover:bg-[#222222] border border-[#262626] rounded-[4px] text-[13px] text-[#CCCCCC] hover:text-[#F0F0F0] font-mono transition-colors flex items-center justify-between group"
-                      >
-                        <span className="tracking-wider">{item}</span>
-                        <Search size={13} className="text-[#555555] group-hover:text-[#3B82F6] transition-colors" />
-                      </button>
-                    ))}
-                  </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchHistory([]);
+                      localStorage.removeItem('plate_search_history');
+                    }}
+                    className="text-[11px] text-[#EF4444] hover:text-[#FF6666] ml-2 font-medium transition-colors underline-offset-2 hover:underline"
+                  >
+                    Clear All
+                  </button>
                 </div>
               )}
             </div>
@@ -131,16 +127,16 @@ export default function PlateSearch() {
 
         {/* Search Results */}
         {result && (
-          <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="mt-8 space-y-8 animate-in fade-in duration-200">
             {/* Proper No Results State */}
             {!result.rto && result.events.length === 0 ? (
-              <div className="bg-[#161616] border border-[#2A2A2A] rounded-[6px] overflow-hidden py-16 px-8 my-6 flex flex-col items-center justify-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#202020] border border-[#2E2E2E] flex items-center justify-center mb-4">
-                  <Search size={24} className="text-[#666666]" />
+              <div className="bg-[#161616] border border-[#2A2A2A] rounded-[8px] overflow-hidden py-20 px-8 my-8 flex flex-col items-center justify-center text-center shadow-lg">
+                <div className="w-16 h-16 rounded-full bg-[#222222] border border-[#333333] flex items-center justify-center mb-5 shadow-inner">
+                  <Search size={28} className="text-[#777777]" />
                 </div>
-                <h3 className="text-[#F0F0F0] text-[16px] font-semibold font-ui tracking-wide">No Results Found</h3>
-                <p className="text-[#888888] text-[13px] font-ui mt-2 max-w-md leading-relaxed">
-                  We could not find any RTO records or camera sightings for <span className="text-[#E0E0E0] font-mono font-medium">"{result.plate_number}"</span>.
+                <h3 className="text-[#FFFFFF] text-[18px] font-semibold font-ui tracking-wide">No Results Found</h3>
+                <p className="text-[#999999] text-[14px] font-ui mt-2.5 max-w-md leading-relaxed">
+                  We could not find any RTO records or camera sightings for <span className="text-[#FFFFFF] bg-[#222222] px-2 py-0.5 rounded font-mono font-semibold border border-[#333333]">"{result.plate_number}"</span>.
                 </p>
               </div>
             ) : (
