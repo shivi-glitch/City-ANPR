@@ -21,15 +21,32 @@ class Settings(BaseSettings):
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
         if isinstance(v, str):
+            v = v.strip().strip("'").strip('"')
             # Automatically adjust postgres:// and postgresql:// to use asyncpg
             if v.startswith("postgres://"):
                 v = v.replace("postgres://", "postgresql+asyncpg://", 1)
             elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
                 v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
             
-            # Handle Neon sslmode
-            if "sslmode=require" in v:
-                v = v.replace("sslmode=require", "ssl=require")
+            # If there are query parameters in postgresql URL:
+            if "?" in v and v.startswith("postgresql+asyncpg://"):
+                base_part, query_part = v.split("?", 1)
+                valid_params = []
+                for param in query_part.split("&"):
+                    if not param:
+                        continue
+                    if param.startswith("sslmode="):
+                        valid_params.append("ssl=require")
+                    elif param.startswith("ssl="):
+                        valid_params.append(param)
+                    elif param.startswith("timeout=") or param.startswith("command_timeout="):
+                        valid_params.append(param)
+                    # Exclude unsupported asyncpg params like channel_binding
+                if valid_params:
+                    dedup_params = list(dict.fromkeys(valid_params))
+                    v = f"{base_part}?{'&'.join(dedup_params)}"
+                else:
+                    v = base_part
         return v
 
     @field_validator("CORS_ORIGINS", mode="before")
