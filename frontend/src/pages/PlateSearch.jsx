@@ -85,15 +85,15 @@ export default function PlateSearch() {
               </Button>
             </div>
             
-            <div className="flex flex-col gap-4 border-t border-[#2A2A2A]/50 pt-3">
-              <p className="text-[11px] text-[#555555] font-ui flex items-center">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-t border-[#2A2A2A]/50 pt-4">
+              <p className="text-[12px] text-[#666666] font-ui flex items-center pt-1">
                 Search is case-insensitive. Partial matches not supported.
               </p>
               
               {searchHistory.length > 0 && (
-                <div className="flex flex-col gap-1.5 w-full max-w-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[12px] text-[#888888] uppercase tracking-wider font-semibold">Recent Searches:</span>
+                <div className="flex flex-col gap-2 w-full md:w-80 md:ml-auto bg-[#1A1A1A]/60 border border-[#2A2A2A] rounded-[6px] p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-[#888888] uppercase tracking-wider font-semibold">Recent Searches</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -105,7 +105,7 @@ export default function PlateSearch() {
                       Clear All
                     </button>
                   </div>
-                  <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
                     {searchHistory.map((item, idx) => (
                       <button
                         key={idx}
@@ -116,10 +116,10 @@ export default function PlateSearch() {
                           search(item);
                           addToHistory(item);
                         }}
-                        className="w-full text-left px-3 py-2 bg-[#1A1A1A] hover:bg-[#222222] border border-[#2A2A2A] rounded-[4px] text-[13px] text-[#CCCCCC] hover:text-[#F0F0F0] font-mono transition-colors flex items-center justify-between group"
+                        className="w-full text-left px-3 py-1.5 bg-[#141414] hover:bg-[#222222] border border-[#262626] rounded-[4px] text-[13px] text-[#CCCCCC] hover:text-[#F0F0F0] font-mono transition-colors flex items-center justify-between group"
                       >
-                        <span className="tracking-wide">{item}</span>
-                        <Search size={14} className="text-[#555555] group-hover:text-[#3B82F6] transition-colors" />
+                        <span className="tracking-wider">{item}</span>
+                        <Search size={13} className="text-[#555555] group-hover:text-[#3B82F6] transition-colors" />
                       </button>
                     ))}
                   </div>
@@ -134,11 +134,13 @@ export default function PlateSearch() {
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* Proper No Results State */}
             {!result.rto && result.events.length === 0 ? (
-              <div className="bg-[#161616] border border-[#2A2A2A] rounded-[6px] overflow-hidden p-10 flex flex-col items-center text-center">
-                <Search size={32} className="text-[#444444] mb-3" />
-                <h3 className="text-[#F0F0F0] text-[15px] font-semibold font-ui">No Results Found</h3>
-                <p className="text-[#888888] text-[13px] font-ui mt-1 max-w-sm">
-                  We could not find any RTO records or camera sightings for "{result.plate_number}".
+              <div className="bg-[#161616] border border-[#2A2A2A] rounded-[6px] overflow-hidden py-16 px-8 my-6 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-full bg-[#202020] border border-[#2E2E2E] flex items-center justify-center mb-4">
+                  <Search size={24} className="text-[#666666]" />
+                </div>
+                <h3 className="text-[#F0F0F0] text-[16px] font-semibold font-ui tracking-wide">No Results Found</h3>
+                <p className="text-[#888888] text-[13px] font-ui mt-2 max-w-md leading-relaxed">
+                  We could not find any RTO records or camera sightings for <span className="text-[#E0E0E0] font-mono font-medium">"{result.plate_number}"</span>.
                 </p>
               </div>
             ) : (
