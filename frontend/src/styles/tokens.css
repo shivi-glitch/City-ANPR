@@ -1,46 +1,48 @@
-:root {
-  /* Backgrounds — charcoal ramp */
-  --bg-base:        #111111;
-  --bg-surface:     #161616;
-  --bg-raised:      #1E1E1E;
-  --bg-overlay:     #242424;
+@layer base {
+  :root {
+    /* Backgrounds — charcoal ramp */
+    --bg-base:        #111111;
+    --bg-surface:     #161616;
+    --bg-raised:      #1E1E1E;
+    --bg-overlay:     #242424;
 
-  /* Borders */
-  --border-subtle:  #2A2A2A;
-  --border-active:  #3D3D3D;
+    /* Borders */
+    --border-subtle:  #2A2A2A;
+    --border-active:  #3D3D3D;
 
-  /* Text */
-  --text-primary:   #F0F0F0;
-  --text-secondary: #888888;
-  --text-dim:       #555555;
-  --text-ghost:     #333333;
+    /* Text */
+    --text-primary:   #F0F0F0;
+    --text-secondary: #888888;
+    --text-dim:       #555555;
+    --text-ghost:     #333333;
 
-  /* Semantic signals — ONLY place color is used */
-  --signal-green:   #22C55E;
-  --signal-amber:   #F59E0B;
-  --signal-red:     #EF4444;
-  --signal-red-dim: #2A1010;
-  --signal-green-dim: #0F2A1A;
-  --signal-amber-dim: #2A1F0A;
+    /* Semantic signals — ONLY place color is used */
+    --signal-green:   #22C55E;
+    --signal-amber:   #F59E0B;
+    --signal-red:     #EF4444;
+    --signal-red-dim: #2A1010;
+    --signal-green-dim: #0F2A1A;
+    --signal-amber-dim: #2A1F0A;
 
-  /* Plate */
-  --plate-bg:       #1A1A1A;
+    /* Plate */
+    --plate-bg:       #1A1A1A;
 
-  /* Typography */
-  --font-ui:   'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'PT Serif', Georgia, serif;
-  --font-data: 'JetBrains Mono', monospace;
+    /* Typography */
+    --font-ui:   'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'PT Serif', Georgia, serif;
+    --font-data: 'JetBrains Mono', monospace;
 
-  /* Type scale */
-  --text-xs:   11px;
-  --text-sm:   13px;
-  --text-base: 15px;
-  --text-lg:   18px;
-  --text-xl:   22px;
-  --text-2xl:  28px;
+    /* Type scale */
+    --text-xs:   11px;
+    --text-sm:   13px;
+    --text-base: 15px;
+    --text-lg:   18px;
+    --text-xl:   22px;
+    --text-2xl:  28px;
 
-  /* Radius */
-  --radius-sm: 3px;
-  --radius-md: 5px;
-  --radius-lg: 8px;
+    /* Radius */
+    --radius-sm: 3px;
+    --radius-md: 5px;
+    --radius-lg: 8px;
+  }
 }

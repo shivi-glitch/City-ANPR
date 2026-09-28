@@ -1,34 +1,28 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@layer base {
+  html, body {
+    height: 100%;
+    width: 100%;
+  }
 
-html, body {
-  height: 100%;
-  width: 100%;
-}
+  body {
+    font-family: var(--font-ui);
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
 
-body {
-  font-family: var(--font-ui);
-  background-color: var(--bg-base);
-  color: var(--text-primary);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
+  input, button, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
 
-input, button, textarea, select {
-  font: inherit;
-  color: inherit;
-}
+  button {
+    cursor: pointer;
+  }
 
-button {
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
 }

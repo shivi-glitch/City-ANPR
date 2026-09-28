@@ -10,7 +10,6 @@ import {
   ShieldAlert,
   LogOut,
   Cpu,
-  Settings,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -62,14 +61,6 @@ export default function Sidebar() {
       {/* Bottom Nav Items */}
       <div className="flex flex-col items-center gap-2 w-full px-2.5">
         <div className="w-8 h-[1px] bg-[#2A2A2A] mb-2" />
-        
-        <button
-          onClick={() => navigate('/settings')}
-          title="Settings"
-          className="w-full h-11 flex items-center justify-center rounded-[6px] text-[#888888] hover:text-[#E0E0E0] hover:bg-[#1C1C1C] transition-all duration-150"
-        >
-          <Settings size={20} strokeWidth={1.5} />
-        </button>
 
         <button
           onClick={logout}

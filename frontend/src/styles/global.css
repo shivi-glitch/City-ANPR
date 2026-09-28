@@ -27,37 +27,61 @@
   --font-data:  'JetBrains Mono', monospace;
 }
 
-/* Typography utilities */
-.font-ui {
-  font-family: var(--font-ui) !important;
+@layer utilities {
+  /* Typography utilities */
+  .font-ui {
+    font-family: var(--font-ui);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-data {
+    font-family: var(--font-data);
+    letter-spacing: -0.02em;
+  }
+
+  /* Skeleton Loading Shimmer */
+  .skeleton-row {
+    background: linear-gradient(90deg, #161616 25%, #1E1E1E 50%, #161616 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
+  }
+
+  /* Maplibre Canvas Fit */
+  .maplibregl-canvas {
+    outline: none;
+  }
+
+  /* Table Row Hover */
+  .table-row-hover:hover {
+    background-color: var(--bg-raised);
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
 }
 
-.font-serif {
-  font-family: var(--font-serif) !important;
+@layer base {
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-base);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-subtle);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-active);
+  }
 }
 
-.font-data {
-  font-family: var(--font-data) !important;
-  letter-spacing: -0.02em;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-base);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-active);
-}
-
-/* Camera Pulse */
 @keyframes pulse-slow {
   0%, 100% {
     opacity: 1;
@@ -69,11 +93,6 @@
   }
 }
 
-.animate-pulse-slow {
-  animation: pulse-slow 3s ease-in-out infinite;
-}
-
-/* Skeleton Loading Shimmer */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -81,20 +100,4 @@
   100% {
     background-position: 200% 0;
   }
-}
-
-.skeleton-row {
-  background: linear-gradient(90deg, #161616 25%, #1E1E1E 50%, #161616 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
-}
-
-/* Maplibre Canvas Fit */
-.maplibregl-canvas {
-  outline: none;
-}
-
-/* Table Row Hover */
-.table-row-hover:hover {
-  background-color: var(--bg-raised);
 }
