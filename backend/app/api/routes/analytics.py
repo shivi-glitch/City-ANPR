@@ -19,7 +19,7 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 @router.get("/traffic", response_model=TrafficResponse)
 async def traffic_analytics(
-    window: str = Query("hour", pattern="^(hour|15min|day)$", description="Aggregation window"),
+    window: str = Query("hour", pattern="^(hour|15min|day|week|month|1d|1w|1m|last_hours)$", description="Aggregation window"),
     date: Optional[str] = Query(None, description="Date in YYYY-MM-DD format"),
     db: AsyncSession = Depends(get_db)
 ):

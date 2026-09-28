@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [cameraRanking, setCameraRanking] = useState([]);
   const [hourlyData, setHourlyData] = useState([]);
   const [selectedCamera, setSelectedCamera] = useState(null);
+  const [timeFrame, setTimeFrame] = useState('1d');
 
   const { summary: cameraSummary } = useCameras();
   const { alerts, activeCount: activeAlertsCount } = useAlerts();
@@ -31,10 +32,12 @@ export default function Dashboard() {
     let isCurrent = true;
     const fetchDashboardData = async () => {
       try {
+        const currentDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
         const [sumRes, rankRes, hourRes] = await Promise.allSettled([
-          api.get('/api/analytics/summary', { params: { date: DEMO_DAY } }),
-          api.get('/api/analytics/camera-ranking', { params: { date: DEMO_DAY, limit: 5 } }),
-          api.get('/api/analytics/traffic', { params: { window: 'hour', date: DEMO_DAY } }),
+          api.get('/api/analytics/summary', { params: { date: currentDate } }),
+          api.get('/api/analytics/camera-ranking', { params: { date: currentDate, limit: 5 } }),
+          api.get('/api/analytics/traffic', { params: { window: timeFrame, date: currentDate } }),
         ]);
 
         if (isCurrent) {
@@ -56,7 +59,7 @@ export default function Dashboard() {
 
     fetchDashboardData();
     return () => { isCurrent = false; };
-  }, []);
+  }, [timeFrame]);
 
   // 2. Real-time Live Moving Numbers: WebSocket / Detection Feed Stream
   useEffect(() => {
@@ -122,7 +125,7 @@ export default function Dashboard() {
   return (
     <PageWrapper
       title="Operations Console"
-      subtitle="City-wide ANPR & Traffic Intelligence"
+      subtitle={`City-wide ANPR & Traffic Intelligence | ${new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' })}`}
       fullWidth
       className="bg-[#111111]"
     >
@@ -203,8 +206,23 @@ export default function Dashboard() {
                 <h3 className="text-[14px] font-semibold text-[#F0F0F0] font-ui uppercase tracking-wider">Traffic Analytics</h3>
                 <p className="text-[12px] text-[#888888] font-ui mt-1">Spatial and temporal distribution over network</p>
               </div>
+              <div className="flex items-center gap-1 bg-[#111] p-1 rounded-[4px] border border-[#2A2A2A]">
+                {['1d', '1w', '1m'].map((tf) => (
+                  <button
+                    key={tf}
+                    onClick={() => setTimeFrame(tf)}
+                    className={`px-3 py-1 text-[11px] font-ui uppercase font-semibold rounded-[3px] transition-all duration-200 ${
+                      timeFrame === tf
+                        ? 'bg-[#2A2A2A] text-white shadow-sm'
+                        : 'text-[#888888] hover:text-[#D0D0D0] hover:bg-[#1A1A1A]'
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
             </div>
-            <HourlyBarChart data={hourlyData} />
+            <HourlyBarChart data={hourlyData} timePeriod={timeFrame} />
           </div>
         </div>
 

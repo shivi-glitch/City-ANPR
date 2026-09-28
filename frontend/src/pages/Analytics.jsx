@@ -12,6 +12,7 @@ export default function Analytics() {
   const [intervalData, setIntervalData] = useState([]);
   const [cameraRanking, setCameraRanking] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [timeFrame, setTimeFrame] = useState('1d');
 
   useEffect(() => {
     let isCurrent = true;
@@ -19,11 +20,13 @@ export default function Analytics() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
+        const currentDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
         const [sumRes, hourRes, minRes, rankRes] = await Promise.allSettled([
-          api.get('/api/analytics/summary', { params: { date: DEMO_DAY } }),
-          api.get('/api/analytics/traffic', { params: { window: 'hour', date: DEMO_DAY } }),
-          api.get('/api/analytics/traffic', { params: { window: '15min', date: DEMO_DAY } }),
-          api.get('/api/analytics/camera-ranking', { params: { date: DEMO_DAY, limit: 10 } }),
+          api.get('/api/analytics/summary', { params: { date: currentDate } }),
+          api.get('/api/analytics/traffic', { params: { window: timeFrame, date: currentDate } }),
+          api.get('/api/analytics/traffic', { params: { window: '15min', date: currentDate } }),
+          api.get('/api/analytics/camera-ranking', { params: { date: currentDate, limit: 10 } }),
         ]);
 
         if (isCurrent) {
@@ -44,12 +47,12 @@ export default function Analytics() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [timeFrame]);
 
   return (
     <PageWrapper
       title="Traffic Analytics"
-      subtitle="Spatial and temporal distribution over Chandigarh 46-camera sensor network"
+      subtitle={`Spatial and temporal distribution | ${new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' })}`}
       fullWidth
     >
       <div className="space-y-6">
@@ -82,22 +85,34 @@ export default function Analytics() {
 
         {/* Row 2: Charts (60/40 Split) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Left Panel: Traffic Volume by Hour (60%) */}
+          {/* Left Panel: Traffic Volume (60%) */}
           <div className="lg:col-span-7 bg-[#161616] border border-[#2A2A2A] rounded-[6px] p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="text-[15px] font-medium text-[#F0F0F0] font-ui">
-                  Traffic Volume by Hour
+                  Traffic Volume
                 </h3>
                 <p className="text-[12px] text-[#888888] font-ui">
-                  Hourly vehicle count across Chandigarh corridors
+                  Vehicle count across Chandigarh corridors
                 </p>
               </div>
-              <span className="text-[11px] font-data text-[#888888] bg-[#1E1E1E] px-2 py-0.5 rounded">
-                Jun 14, 2025
-              </span>
+              <div className="flex items-center gap-1 bg-[#111] p-1 rounded-[4px] border border-[#2A2A2A]">
+                {['1d', '1w', '1m'].map((tf) => (
+                  <button
+                    key={tf}
+                    onClick={() => setTimeFrame(tf)}
+                    className={`px-3 py-1 text-[11px] font-ui uppercase font-semibold rounded-[3px] transition-all duration-200 ${
+                      timeFrame === tf
+                        ? 'bg-[#2A2A2A] text-white shadow-sm'
+                        : 'text-[#888888] hover:text-[#D0D0D0] hover:bg-[#1A1A1A]'
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
             </div>
-            <HourlyBarChart data={hourlyData} />
+            <HourlyBarChart data={hourlyData} timePeriod={timeFrame} />
           </div>
 
           {/* Right Panel: Camera Activity Ranking (40%) */}
