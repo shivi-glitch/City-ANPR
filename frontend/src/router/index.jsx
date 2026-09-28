@@ -5,7 +5,6 @@ import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import Analytics from '../pages/Analytics';
 import Alerts from '../pages/Alerts';
-import Logs from '../pages/Logs';
 import PlateSearch from '../pages/PlateSearch';
 import RestrictedVehicles from '../pages/RestrictedVehicles';
 import AIDetection from '../pages/AIDetection';
@@ -48,10 +47,6 @@ export const router = createBrowserRouter([
       {
         path: 'alerts',
         element: <Alerts />,
-      },
-      {
-        path: 'logs',
-        element: <Logs />,
       },
       {
         path: 'search',

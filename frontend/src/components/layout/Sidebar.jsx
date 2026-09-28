@@ -5,7 +5,6 @@ import {
   Map,
   BarChart2,
   Bell,
-  ScrollText,
   Search,
   ShieldAlert,
   LogOut,
@@ -21,8 +20,7 @@ export default function Sidebar() {
   const mainNavItems = [
     { icon: Map, path: '/dashboard', tooltip: 'Map View' },
     { icon: BarChart2, path: '/analytics', tooltip: 'Analytics' },
-    { icon: Bell, path: '/alerts', tooltip: 'Alerts' },
-    { icon: ScrollText, path: '/logs', tooltip: 'Audit Log' },
+    { icon: Bell, path: '/alerts', tooltip: 'Alerts Audit Log' },
     { icon: Search, path: '/search', tooltip: 'Plate Search' },
     { icon: ShieldAlert, path: '/restricted', tooltip: 'Restricted Vehicles' },
     { icon: Cpu, path: '/ai-detection', tooltip: 'Live AI Detection' },

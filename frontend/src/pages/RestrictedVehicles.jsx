@@ -1,58 +1,124 @@
 import React, { useState, useEffect } from 'react';
 import PageWrapper from '../components/layout/PageWrapper';
-import { Table, TableHead, TableHeader, TableBody, TableRow, TableCell } from '../components/ui/Table';
+import { Table, TableHead, TableHeader, TableBody, TableRow, TableCell, TableSkeletonRows } from '../components/ui/Table';
 import PlateTag from '../components/plates/PlateTag';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import EmptyState from '../components/ui/EmptyState';
+import api from '../lib/api';
 import { formatISTTime } from '../lib/utils';
-import { ShieldAlert, Plus, Trash2, AlertTriangle, User, CarFront } from 'lucide-react';
-
-const INITIAL_BLACKLIST = [
-  { id: '1', plate_number: 'PB10AB1234', category: 'Stolen', reason: 'FIR No. 0411/2025, PS Sector 34', added_by_name: 'Admin', added_at: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: '2', plate_number: 'HR26BN0093', category: 'Wanted', reason: 'Suspected involvement in hit & run', added_by_name: 'System', added_at: new Date(Date.now() - 3600000 * 12).toISOString() },
-  { id: '3', plate_number: 'CH01AB7654', category: 'VIP', reason: 'Chief Minister Escort Vehicle', added_by_name: 'Admin', added_at: new Date(Date.now() - 86400000 * 5).toISOString() }
-];
+import { ShieldAlert, Plus, Trash2, AlertTriangle, User, CarFront, Loader2 } from 'lucide-react';
 
 export default function RestrictedVehicles() {
-  const [blacklist, setBlacklist] = useState(INITIAL_BLACKLIST);
+  const [blacklist, setBlacklist] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Modal states
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newPlate, setNewPlate] = useState('');
   const [newCategory, setNewCategory] = useState('Stolen');
   const [newReason, setNewReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState('');
   
   // Remove confirmation modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [targetItem, setTargetItem] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-    if (!newPlate.trim() || !newReason.trim()) return;
-
-    const newItem = {
-      id: Date.now().toString(),
-      plate_number: newPlate.trim().toUpperCase(),
-      category: newCategory,
-      reason: newReason.trim(),
-      added_by_name: 'Operator',
-      added_at: new Date().toISOString()
-    };
-
-    setBlacklist([newItem, ...blacklist]);
-    setAddModalOpen(false);
-    setNewPlate('');
-    setNewReason('');
-    setNewCategory('Stolen');
+  const fetchBlacklist = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get('/api/blacklist');
+      setBlacklist(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error('Failed to load restricted vehicles:', err);
+      setError('Failed to load restricted vehicles from database.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleConfirmDelete = () => {
+  useEffect(() => {
+    fetchBlacklist();
+  }, []);
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    const cleanPlate = newPlate.trim().toUpperCase().replace(/\s+/g, '');
+    const cleanReason = newReason.trim();
+
+    if (!cleanPlate || !cleanReason) {
+      setModalError('Please enter both a plate number and a reason.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setModalError('');
+
+      const formattedReason = `[${newCategory}] ${cleanReason}`;
+      const res = await api.post('/api/blacklist', {
+        plate_number: cleanPlate,
+        reason: formattedReason,
+      });
+
+      if (res.data) {
+        setBlacklist(prev => [res.data, ...prev]);
+      }
+
+      setAddModalOpen(false);
+      setNewPlate('');
+      setNewReason('');
+      setNewCategory('Stolen');
+    } catch (err) {
+      console.error('Failed to add vehicle:', err);
+      const msg = err.response?.data?.detail || 'Failed to add restricted vehicle. It may already exist.';
+      setModalError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
     if (!targetItem) return;
-    setBlacklist(blacklist.filter((item) => item.id !== targetItem.id));
-    setDeleteModalOpen(false);
-    setTargetItem(null);
+    try {
+      setDeleting(true);
+      await api.delete(`/api/blacklist/${targetItem.id}`);
+      setBlacklist(prev => prev.filter(item => item.id !== targetItem.id));
+      setDeleteModalOpen(false);
+      setTargetItem(null);
+    } catch (err) {
+      console.error('Failed to remove vehicle:', err);
+      alert(err.response?.data?.detail || 'Failed to remove vehicle from restricted list');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const extractCategory = (item) => {
+    if (item.category) return item.category;
+    const reason = item.reason || '';
+    if (reason.startsWith('[') && reason.includes(']')) {
+      return reason.slice(1, reason.indexOf(']'));
+    }
+    const lower = reason.toLowerCase();
+    if (lower.includes('stolen')) return 'Stolen';
+    if (lower.includes('warrant') || lower.includes('wanted')) return 'Wanted';
+    if (lower.includes('vip') || lower.includes('escort')) return 'VIP';
+    if (lower.includes('hit and run') || lower.includes('suspicious') || lower.includes('probe')) return 'Suspicious';
+    return 'Restricted';
+  };
+
+  const cleanDisplayReason = (reason) => {
+    if (!reason) return '';
+    if (reason.startsWith('[') && reason.includes(']')) {
+      return reason.slice(reason.indexOf(']') + 1).trim();
+    }
+    return reason;
   };
 
   const getCategoryStyle = (cat) => {
@@ -60,6 +126,7 @@ export default function RestrictedVehicles() {
       case 'stolen': return 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30';
       case 'wanted': return 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30';
       case 'vip': return 'bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/30';
+      case 'suspicious': return 'bg-[#A855F7]/10 text-[#A855F7] border-[#A855F7]/30';
       default: return 'bg-[#888888]/10 text-[#888888] border-[#888888]/30';
     }
   };
@@ -82,7 +149,10 @@ export default function RestrictedVehicles() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => setAddModalOpen(true)}
+          onClick={() => {
+            setModalError('');
+            setAddModalOpen(true);
+          }}
           className="h-8"
         >
           <Plus size={14} strokeWidth={1.5} className="mr-1" />
@@ -103,41 +173,48 @@ export default function RestrictedVehicles() {
             </tr>
           </TableHead>
           <TableBody>
-            {blacklist.length > 0 ? (
-              blacklist.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <PlateTag plate={item.plate_number} />
-                  </TableCell>
-                  <TableCell>
-                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border text-[11px] font-bold uppercase tracking-wider ${getCategoryStyle(item.category)}`}>
-                      {getCategoryIcon(item.category)}
-                      {item.category}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-[#F0F0F0] max-w-md">
-                    {item.reason}
-                  </TableCell>
-                  <TableCell className="text-[#888888]">
-                    {item.added_by_name}
-                  </TableCell>
-                  <TableCell mono className="text-[#888888] text-[12px]">
-                    {formatISTTime(item.added_at, true)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      onClick={() => {
-                        setTargetItem(item);
-                        setDeleteModalOpen(true);
-                      }}
-                      className="text-[12px] font-medium text-[#EF4444] hover:underline font-ui inline-flex items-center gap-1"
-                    >
-                      <Trash2 size={13} strokeWidth={1.5} />
-                      Remove
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))
+            {loading ? (
+              <TableSkeletonRows columns={6} rows={6} />
+            ) : blacklist.length > 0 ? (
+              blacklist.map((item) => {
+                const cat = extractCategory(item);
+                const displayReason = cleanDisplayReason(item.reason);
+
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <PlateTag plate={item.plate_number} />
+                    </TableCell>
+                    <TableCell>
+                      <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border text-[11px] font-bold uppercase tracking-wider ${getCategoryStyle(cat)}`}>
+                        {getCategoryIcon(cat)}
+                        {cat}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[#F0F0F0] max-w-md">
+                      {displayReason}
+                    </TableCell>
+                    <TableCell className="text-[#888888]">
+                      {item.added_by_name || 'Admin'}
+                    </TableCell>
+                    <TableCell mono className="text-[#888888] text-[12px]">
+                      {formatISTTime(item.added_at, true)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <button
+                        onClick={() => {
+                          setTargetItem(item);
+                          setDeleteModalOpen(true);
+                        }}
+                        className="text-[12px] font-medium text-[#EF4444] hover:underline font-ui inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 size={13} strokeWidth={1.5} />
+                        Remove
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={6} className="p-8">
@@ -156,16 +233,25 @@ export default function RestrictedVehicles() {
       {/* Add Vehicle Modal */}
       <Modal
         isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        onClose={() => !submitting && setAddModalOpen(false)}
         title="Add Vehicle to Restricted List"
       >
         <form onSubmit={handleAddSubmit} className="space-y-4">
+          {modalError && (
+            <div className="p-2.5 rounded bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] text-[12px] font-medium font-ui">
+              {modalError}
+            </div>
+          )}
+
           <Input
             mono
             label="Plate Number"
             placeholder="e.g. CH01AB9999"
             value={newPlate}
-            onChange={(e) => setNewPlate(e.target.value.toUpperCase())}
+            onChange={(e) => {
+              setNewPlate(e.target.value.toUpperCase());
+              if (modalError) setModalError('');
+            }}
             required
             autoFocus
           />
@@ -186,9 +272,12 @@ export default function RestrictedVehicles() {
 
           <Input
             label="Reason / Case Reference"
-            placeholder="e.g. Stolen vehicle — FIR No. 0411/2025, PS Sector 34"
+            placeholder="e.g. FIR No. 0411/2025, PS Sector 34"
             value={newReason}
-            onChange={(e) => setNewReason(e.target.value)}
+            onChange={(e) => {
+              setNewReason(e.target.value);
+              if (modalError) setModalError('');
+            }}
             required
           />
 
@@ -197,6 +286,7 @@ export default function RestrictedVehicles() {
               variant="outline"
               size="md"
               type="button"
+              disabled={submitting}
               onClick={() => setAddModalOpen(false)}
             >
               Cancel
@@ -205,9 +295,11 @@ export default function RestrictedVehicles() {
               variant="primary"
               size="md"
               type="submit"
-              disabled={!newPlate.trim() || !newReason.trim()}
+              disabled={submitting || !newPlate.trim() || !newReason.trim()}
+              className="flex items-center gap-1.5 font-semibold"
             >
-              Add to List
+              {submitting && <Loader2 size={13} className="animate-spin" />}
+              <span>{submitting ? 'Adding...' : 'Add to List'}</span>
             </Button>
           </div>
         </form>
@@ -216,7 +308,7 @@ export default function RestrictedVehicles() {
       {/* Remove Confirmation Modal */}
       <Modal
         isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        onClose={() => !deleting && setDeleteModalOpen(false)}
         title="Confirm Removal"
       >
         <div className="space-y-4">
@@ -236,6 +328,7 @@ export default function RestrictedVehicles() {
               variant="outline"
               size="md"
               type="button"
+              disabled={deleting}
               onClick={() => setDeleteModalOpen(false)}
             >
               Cancel
@@ -244,9 +337,12 @@ export default function RestrictedVehicles() {
               variant="danger"
               size="md"
               type="button"
+              disabled={deleting}
               onClick={handleConfirmDelete}
+              className="flex items-center gap-1.5"
             >
-              Confirm Remove
+              {deleting && <Loader2 size={13} className="animate-spin" />}
+              <span>{deleting ? 'Removing...' : 'Confirm Remove'}</span>
             </Button>
           </div>
         </div>
